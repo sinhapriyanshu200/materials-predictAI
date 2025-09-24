@@ -9,8 +9,12 @@ uncertainties
 monty
 
 # Materials science
+py3Dmol
+
+# Materials science
 pymatgen==2024.9.17.1
-mp-api==0.35.4
+mp-api==0.45.9
+py3Dmol
 py3Dmol
 
 
