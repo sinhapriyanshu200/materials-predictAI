@@ -9,21 +9,15 @@ uncertainties
 monty
 
 # Materials science
-py3Dmol
-
-# Materials science
 pymatgen==2024.9.17.1
 mp-api==0.45.9
 py3Dmol
-py3Dmol
-
 
 # Web and app
 streamlit==1.45.1
 python-dotenv
 openai
-pinecone-client
-
+pinecone
 
 # Utility
 requests
