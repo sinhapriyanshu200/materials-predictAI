@@ -2,8 +2,7 @@
 
 An AI-powered web application that predicts stable, real-world materials for your design goal, and provides interactive 3D visualizations of their crystal structures and key properties. Built with Streamlit, it integrates OpenAI models and the Materials Project API, making it a powerful tool for materials science research, discovery, and education.
 
-Developed & maintained at IIT (BHU), Varanasi, specifically for material scientists.
-
+Developed & maintained at IIT (BHU), Varanasi.
 ## Features
 
 
