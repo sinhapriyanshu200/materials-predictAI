@@ -1,26 +1,25 @@
 # Core scientific and data packages
-numpy==2.1.3
-scipy==1.15.3
-pandas==2.2.3
-matplotlib==3.10.0
-scikit-learn==1.6.1
-spglib==2.6.0
-uncertainties==3.2.3
-monty==2024.8.8
+numpy
+scipy
+pandas
+matplotlib
+scikit-learn
+spglib
+uncertainties
+monty
 
 # Materials science
 pymatgen==2024.9.17.1
 mp-api==0.35.4
-py3Dmol==2.0.3
+py3Dmol
+
 
 # Web and app
 streamlit==1.45.1
-python-dotenv==1.1.0
-openai==1.93.3
+python-dotenv
+openai
+pinecone-client
 
-# Visualization
-plotly==5.24.1
-altair==5.5.0
 
 # Utility
-requests==2.32.4
+requests
