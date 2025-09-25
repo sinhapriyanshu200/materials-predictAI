@@ -15,9 +15,9 @@ import uuid
 import openai
 import logging
 
-# =============================
-# API setup (top level)
-# =============================
+# ======================================================
+# API SETUP (TOP LEVEL)
+# ======================================================
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MATERIALS_PROJECT_API_KEY = os.getenv("MATERIALS_PROJECT_API_KEY")
@@ -49,9 +49,9 @@ except Exception as e:
     st.error(f"Pinecone initialization failed: {e}")
     st.stop()
 
-# =============================
-# Utility Functions
-# =============================
+# ======================================================
+# UTILITY FUNCTIONS
+# ======================================================
 def extract_formulas(text, source="LLM"):
     """Parse and validate formulas from LLM output."""
     try:
@@ -59,7 +59,7 @@ def extract_formulas(text, source="LLM"):
             return []
         text_clean = text
 
-        # --- Extract formulas from LLM output (expects a Python list in brackets) ---
+    # --- Extract formulas from LLM output (expects a Python list in brackets) ---
         match = re.search(r"\[.*?\]", text_clean, re.DOTALL)
         if match:
             candidate = match.group()
@@ -89,14 +89,14 @@ def extract_formulas(text, source="LLM"):
                 return out
         return []
     except Exception:
-        # --- Warn if parsing fails ---
+    # --- Warn if parsing fails ---
         st.warning(f"⚠️ {source} output parsing failed:\n{text}")
         return []
 
 
-# =============================
-# 3D Structure Viewer Utility
-# =============================
+# ======================================================
+# 3D STRUCTURE VIEWER UTILITY
+# ======================================================
 def show_structure(structure, supercell=(2, 2, 2)):
     """Render 3D structure viewer for a material."""
     if structure is None:
@@ -117,9 +117,9 @@ def show_structure(structure, supercell=(2, 2, 2)):
     return viewer
 
 
-# =============================
-# Download Link Utility
-# =============================
+# ======================================================
+# DOWNLOAD LINK UTILITY
+# ======================================================
 def make_data_download_link(content: Union[bytes, str], filename: str, mime: str = "text/plain", label: str = "Download") -> str:
     """Create a styled download link for data (CSV, CIF, etc)."""
     if isinstance(content, str):
@@ -132,11 +132,11 @@ def make_data_download_link(content: Union[bytes, str], filename: str, mime: str
 
 @st.cache_resource()
 
-# =============================
-# Materials Project Query Utility
-# =============================
+# ======================================================
+# MATERIALS PROJECT QUERY UTILITY
+# ======================================================
 def query_mp_for_formula(formula):
-    """Query Materials Project for a given formula, prioritizing stable entries."""
+    """Query Materials Project for a given formula, return any entry (stable or unstable)."""
     from pymatgen.core import Composition
     try:
         # Normalize formula (e.g., Fe3O4 -> Fe3O4)
@@ -144,15 +144,8 @@ def query_mp_for_formula(formula):
         # 1. Try with is_stable=True
         entries = mpr.materials.summary.search(
             formula=norm_formula,
-            is_stable=True,
-            fields=["material_id", "formula_pretty", "formation_energy_per_atom", "band_gap", "density", "structure"]
+            fields=["material_id", "formula_pretty", "formation_energy_per_atom", "band_gap", "density", "structure", "is_stable"]
         )
-        # 2. If no results, try without is_stable
-        if not entries:
-            entries = mpr.materials.summary.search(
-                formula=norm_formula,
-                fields=["material_id", "formula_pretty", "formation_energy_per_atom", "band_gap", "density", "structure"]
-            )
         # 3. If still no results, try chemsys search (e.g., Fe-O)
         if not entries:
             elements = sorted(set(Composition(formula).elements))
@@ -170,9 +163,9 @@ def query_mp_for_formula(formula):
         return None
 
 
-# =============================
-# Pinecone Upsert Utility
-# =============================
+# ======================================================
+# PINECONE UPSERT UTILITY
+# ======================================================
 def upsert_query_and_materials(query: str, materials: list):
     """Upsert a query and its materials to Pinecone vector DB."""
     embedding = get_query_embedding(query)
@@ -182,9 +175,9 @@ def upsert_query_and_materials(query: str, materials: list):
     return item_id
 
 
-# =============================
-# Pinecone Similarity Search Utility
-# =============================
+# ======================================================
+# PINECONE SIMILARITY SEARCH UTILITY
+# ======================================================
 def search_similar_queries(query: str, top_k: int = 3, threshold: float = 0.8):
     """Search Pinecone for similar queries using vector embedding."""
     embedding = get_query_embedding(query)
@@ -193,9 +186,9 @@ def search_similar_queries(query: str, top_k: int = 3, threshold: float = 0.8):
     return [(m.score, m.metadata.get("query"), m.metadata.get("materials")) for m in matches]
 
 
-# =============================
-# Query Embedding Utility
-# =============================
+# ======================================================
+# QUERY EMBEDDING UTILITY
+# ======================================================
 def get_query_embedding(query: str):
     """Generate embedding for a query, removing generic words for focus."""
     # Preprocess: remove generic words to focus on requirements
@@ -216,25 +209,25 @@ def get_query_embedding(query: str):
         return [0.0] * 1024
 
 
-# =============================
-# API Key Validation
-# =============================
+# ======================================================
+# API KEY VALIDATION
+# ======================================================
 if not OPENAI_API_KEY or not MATERIALS_PROJECT_API_KEY:
     st.error("❌ One or more API keys are missing from `.env`.")
     st.stop()
 
 
-# =============================
-# API Client Initialization
-# =============================
+# ======================================================
+# API CLIENT INITIALIZATION
+# ======================================================
 openai.api_key = OPENAI_API_KEY
 client = OpenAI(api_key=OPENAI_API_KEY)
 mpr = MPRester(MATERIALS_PROJECT_API_KEY)
 
 
-# =============================
-# Logging Utility
-# =============================
+# ======================================================
+# LOGGING UTILITY
+# ======================================================
 logging.basicConfig(level=logging.INFO)
 def log(msg):
     # Only print and log, do not show in Streamlit UI
@@ -242,18 +235,19 @@ def log(msg):
     logging.info(msg)
 
 
-# =============================
-# LLM Generation Functions
-# =============================
+# ======================================================
+# LLM GENERATION FUNCTIONS
+# ======================================================
 def generate_openai_formulas(user_prompt):
-    """Generate a list of chemical formulas using OpenAI LLM, strictly present and stable in Materials Project."""
+    """Generate a list of chemical formulas using OpenAI LLM, present in Materials Project (stable or unstable)."""
     try:
         system_prompt = (
             "You are a materials scientist. "
             "Reply ONLY with a Python list of valid chemical formulas. "
-            "Suggest the best materials from the Materials Project database that are highly compliant with the user query, are present in the Materials Project database, and are marked as stable."
-            " Each formula must be a stable material and must be present in The Materials Project DataBase."
-            " Suggested materials must be hihly compliant for the user query."
+            "Suggest the best materials from the Materials Project database that are highly compliant with the user query and are present in the Materials Project database, regardless of their stability. "
+            "Each formula must be present in The Materials Project DataBase. "
+            "Suggested materials must be highly compliant for the user query. "
+            "You may include both stable and unstable materials . Unstable materials are those which is having positive formation energy. While Stable materials are those which is having negative or zero formation energy. "
         )
         response = openai.chat.completions.create(
             model="gpt-4o",
@@ -274,9 +268,9 @@ def evaluate_openai_materials(material_list, user_prompt):
     # (Optional) Evaluate or re-rank LLM materials for compliance. Currently returns all.
     return material_list
 
-# =============================
-# Structure Conversion Utility
-# =============================
+# ======================================================
+# STRUCTURE CONVERSION UTILITY
+# ======================================================
 def structure_to_cif_and_poscar(structure, supercell=(2, 2, 2)):
     """Convert a structure to CIF and POSCAR formats for download."""
     try:
@@ -294,38 +288,38 @@ def structure_to_cif_and_poscar(structure, supercell=(2, 2, 2)):
     except Exception:
         return None, None
 
-# =============================
-# Material Selection Logic
-# =============================
+# ======================================================
+# MATERIAL SELECTION LOGIC
+# ======================================================
 def find_best_material(formulas):
-    """Filter and select the top 3 stable materials from Materials Project."""
+    """Filter and select the top 3 materials from Materials Project (stable or unstable)."""
     candidates = []
     filtered_out = []
     for formula in formulas:
         result = query_mp_for_formula(formula)
         if result:
-            ef = getattr(result, "formation_energy_per_atom", 0.0)
-            bg = getattr(result, "band_gap", 0.0)
-            pretty = getattr(result, "formula_pretty", formula)
             candidates.append(result)
         else:
             filtered_out.append(formula)
-            st.warning(f"⚠️ LLM also suggested for {formula}, but material is either marked as unstable in the Materials Project database or not present.")
+            st.warning(f"⚠️ LLM also suggested for {formula}, but material is not present in the Materials Project database.")
     if filtered_out and candidates:
-        st.info(f"The following suggestions were filtered out as they are not present or not stable in the Materials Project: {', '.join(filtered_out)}")
+        st.info(f"The following suggestions were filtered out as they are not present in the Materials Project: {', '.join(filtered_out)}")
     if not candidates:
-        st.error("No suitable material found in the Materials Project database that is marked as stable.")
+        st.error("No suitable material found in the Materials Project database.")
         return []
     # Sort by formation energy (ascending) and return top 3
     return sorted(candidates, key=lambda x: getattr(x, "formation_energy_per_atom", 9999))[:3]
 
 
-# =============================
-# Streamlit UI & User Interaction
-# =============================
+# ======================================================
+# STREAMLIT UI & USER INTERACTION
+# ======================================================
 st.set_page_config(page_title="Materials PredictAI", layout="wide")
 st.title("🔬 Materials PredictAI")
 st.markdown("Enter **Requirements to be present in material** and let AI suggest candidates from the Materials Project database.")
+
+
+
 
 # --- User input for material requirements ---
 user_query = st.text_input(
@@ -334,7 +328,17 @@ user_query = st.text_input(
 )
 
 
-# --- Heuristic to detect if user query has new constraints (numbers, properties, etc) ---
+# --- Stability filter toggle (centered and prominent, now below info message) ---
+st.markdown("<div style='display:flex; justify-content:center; margin-bottom:0;'>", unsafe_allow_html=True)
+show_unstable = st.toggle(
+    label="Allow passage of unstable materials, if suggested by LLM (turn off for only stable)",
+    value=False,
+    help="(EXPERIMENTAL) Turn ON to include unstable materials in results, if suggested by LLM (higher formation energy materials). Turn OFF to show only stable materials."
+)
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+# --- Heuristic: detect if user query has new constraints (numbers, properties, etc) ---
 def query_has_new_constraints(query):
     constraint_keywords = [
         "less than", "greater than", "above", "below", "between", "filter", "range", "under", "over", "equal to", "not equal", "within", "outside", "at least", "at most", "minimum", "maximum", "limit", "threshold"
@@ -361,7 +365,7 @@ if st.button("Find Best Material"):
     if not user_query.strip():
         st.warning("⚠️ Please enter a valid materials design goal.")
     else:
-        # --- Try to match query in Pinecone vector DB ---
+    # --- Try to match query in Pinecone vector DB ---
         with st.spinner("Generating query embedding and searching vector DB..."):
             try:
                 embedding = get_query_embedding(user_query)
@@ -425,13 +429,26 @@ if st.button("Find Best Material"):
         if not final_materials:
             st.warning("No materials found for this query.")
 
-        # --- Query Materials Project for properties of final materials ---
+    # --- Query Materials Project for properties of final materials ---
         with st.spinner("Querying Materials Project for properties..."):
             best_list = find_best_material(final_materials)
 
-        # --- Display results table and structure viewers ---
+    # --- Display results table and structure viewers ---
         if best_list:
-            st.subheader("🧬 Suggested Stable Compounds")
+            st.subheader("🧬 Suggested Compounds")
+            def get_stability_str(obj):
+                is_stable = getattr(obj, 'is_stable', None)
+                if is_stable is True:
+                    return 'Stable'
+                elif is_stable is False:
+                    return 'Unstable'
+                else:
+                    return 'Unknown'
+            # Use the toggle value to filter
+            if show_unstable:
+                filtered_list = best_list
+            else:
+                filtered_list = [m for m in best_list if getattr(m, 'is_stable', None) is True]
             table_data = [
                 {
                     "#": idx + 1,
@@ -440,8 +457,9 @@ if st.button("Find Best Material"):
                     "Formation Energy (eV/atom)": f"{getattr(best, 'formation_energy_per_atom', 0.0):.3f}",
                     "Band Gap (eV)": f"{getattr(best, 'band_gap', 0.0):.3f}",
                     "Density (g/cm³)": f"{getattr(best, 'density', 0.0):.3f}",
+                    "Stability": get_stability_str(best),
                 }
-                for idx, best in enumerate(best_list)
+                for idx, best in enumerate(filtered_list)
             ]
             st.table(table_data)
             import csv
@@ -513,7 +531,7 @@ if st.button("Find Best Material"):
 if not user_query:
     st.info("👆 Enter a goal above and click **Find Best Material/Compound** to get started.")
 
-# --- Legal & Disclaimer Section ---
+            # --- Legal & Disclaimer Section ---
 st.markdown("""
 ---
 **Third-Party Terms & Conditions**
