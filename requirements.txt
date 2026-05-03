@@ -8,7 +8,10 @@ spglib
 uncertainties
 monty
 
-# Materials science
+# Materials science and featurization
+custodian
+matminer
+phonopy
 pymatgen==2024.9.17.1
 mp-api==0.45.9
 py3Dmol
