@@ -2,6 +2,10 @@ import os
 import re
 import streamlit as st
 import streamlit.components.v1 as components
+
+# Must be the first Streamlit command in the app.
+st.set_page_config(page_title="Materials PredictAI", layout="wide")
+
 from dotenv import load_dotenv
 from openai import OpenAI
 try:
@@ -333,7 +337,6 @@ def find_best_material(formulas):
 # ======================================================
 # STREAMLIT UI & USER INTERACTION
 # ======================================================
-st.set_page_config(page_title="Materials PredictAI", layout="wide")
 st.title("🔬 Materials PredictAI")
 st.markdown("Enter **Requirements to be present in material** and let AI suggest candidates from the Materials Project database.")
 
