@@ -4,7 +4,12 @@ import streamlit as st
 import streamlit.components.v1 as components
 from dotenv import load_dotenv
 from openai import OpenAI
-from mp_api.client import MPRester
+try:
+    from mp_api.client import MPRester
+    MPRester_IMPORT_ERROR = None
+except Exception as e:
+    MPRester = None
+    MPRester_IMPORT_ERROR = e
 import py3Dmol
 import base64
 from typing import Union
@@ -139,6 +144,12 @@ def query_mp_for_formula(formula):
     """Query Materials Project for a given formula, return any entry (stable or unstable)."""
     from pymatgen.core import Composition
     try:
+        if mpr is None:
+            st.error(
+                "Materials Project client is unavailable in this deployment. "
+                "Please check the Streamlit logs and dependency versions."
+            )
+            return None
         # Normalize formula (e.g., Fe3O4 -> Fe3O4)
         norm_formula = str(Composition(formula).reduced_formula)
         # 1. Try with is_stable=True
@@ -222,7 +233,15 @@ if not OPENAI_API_KEY or not MATERIALS_PROJECT_API_KEY:
 # ======================================================
 openai.api_key = OPENAI_API_KEY
 client = OpenAI(api_key=OPENAI_API_KEY)
-mpr = MPRester(MATERIALS_PROJECT_API_KEY)
+if MPRester is None:
+    st.warning(
+        "Materials Project client could not be imported in this deployment. "
+        f"The app will still load, but Materials Project searches may be disabled. "
+        f"Import error: {MPRester_IMPORT_ERROR}"
+    )
+    mpr = None
+else:
+    mpr = MPRester(MATERIALS_PROJECT_API_KEY)
 
 
 # ======================================================
@@ -550,3 +569,4 @@ Developed at:
 **Indian Institute of Technology (IIT BHU), Varanasi**.  
             
 """)
+
