@@ -9,10 +9,9 @@ uncertainties
 monty
 
 # Materials science and featurization
-custodian
-matminer
-phonopy
-pymatgen>=2024.5,<2024.9
+pymatgen==2025.10.7
+emmet-core==0.86.4
+robocrys==0.2.13
 mp-api==0.45.9
 py3Dmol
 
