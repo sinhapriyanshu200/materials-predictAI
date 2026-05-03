@@ -12,8 +12,7 @@ monty
 custodian
 matminer
 phonopy
-robocrys
-pymatgen<2024.9
+pymatgen>=2024.5,<2024.9
 mp-api==0.45.9
 py3Dmol
 
@@ -25,3 +24,4 @@ pinecone
 
 # Utility
 requests
+
